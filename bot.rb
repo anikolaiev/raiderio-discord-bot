@@ -4,7 +4,7 @@ require 'net/http'
 require 'uri'
 
 bot = Discordrb::Bot.new(
-  token: 'OTk3OTk4MDk2NjY1NTQyNzQ2.G0_1yM.uVL8H7Jz50m4wJlwED2_hj8tuvZm-bWBSJ5Mcg',
+  token: 'OTk3OTk4MDk2NjY1NTQyNzQ2.GFAlQ5.pqifHES27tkpbe8O4fOMf7X5mRMjkzOyH0PsKE',
   intents: [Discordrb::INTENTS[:server_messages]]
 )
 bot.message(from: 'Raider.IO') do |event|
