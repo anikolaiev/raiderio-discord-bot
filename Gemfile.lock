@@ -28,6 +28,10 @@ GEM
     netrc (0.11.0)
     opus-ruby (1.0.1)
       ffi
+    rack (3.0.2)
+    rackup (0.2.3)
+      rack (>= 3.0.0.beta1)
+      webrick
     redis-rb (9001.0)
     rest-client (2.1.0)
       http-accept (>= 1.7.0, < 2.0)
@@ -37,6 +41,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.8.2)
+    webrick (1.7.0)
     websocket (1.2.9)
     websocket-client-simple (0.5.1)
       event_emitter
@@ -50,6 +55,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   discordrb!
+  rackup
   redis-rb
 
 BUNDLED WITH

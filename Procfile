@@ -1,2 +1,2 @@
-web: bundle exec ruby server.rb
+web: bundle exec rackup -p 8080
 worker: bundle exec ruby bot.rb
