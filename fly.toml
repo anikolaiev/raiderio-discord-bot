@@ -3,7 +3,10 @@
 app = "raiderio-discord-bot"
 kill_signal = "SIGINT"
 kill_timeout = 5
-processes = []
+# processes = []
+[processes]
+  web = "bundle exec rackup -p 8080"
+  worker = "bundle exec ruby bot.rb"
 
 [build]
   builder = "heroku/buildpacks:20"

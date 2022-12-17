@@ -5,7 +5,7 @@ require 'redis'
 require 'uri'
 
 def redis
-  @redis ||= redis = Redis.new(url: ENV['RADIS_URL'])
+  @redis ||= Redis.new(url: ENV['REDIS_URL'])
 end
 
 bot = Discordrb::Bot.new(
