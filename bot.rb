@@ -1,10 +1,15 @@
-require 'discordrb'
 require 'byebug'
+require 'discordrb'
 require 'net/http'
+require 'redis'
 require 'uri'
 
+def redis
+  @redis ||= redis = Redis.new(url: ENV['RADIS_URL'])
+end
+
 bot = Discordrb::Bot.new(
-  token: 'OTk3OTk4MDk2NjY1NTQyNzQ2.GFAlQ5.pqifHES27tkpbe8O4fOMf7X5mRMjkzOyH0PsKE',
+  token: ENV['TOKEN'],
   intents: [Discordrb::INTENTS[:server_messages]]
 )
 bot.message(from: 'Raider.IO') do |event|
