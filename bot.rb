@@ -18,7 +18,15 @@ bot.message(from: 'Raider.IO') do |event|
 
   thread = event.channel.start_thread("#{Time.now}", 1440, message: event.message)
   names = names(embed.description, 'Tauren Milfs')
-  thread.send_message("<@&#{event.server.roles.find { _1.name == 'Officer' }.id}> Imposter detected. #{names.join(', ')}")
+  strikes = names.map do |name|
+    count = redis.get("player:#{name}").to_i + 1
+    redis.set("player:#{name}", count)
+    count
+  end
+  imposters = names.zip(strikes).map do |name, count|
+    "#{name} (#{count} #{count > 1 ? 'strikes' : 'strike'})"
+  end
+  thread.send_message("<@&#{officer_role_id(event)}> Imposter detected. #{imposters.join(', ')}")
 end
 
 def names(description, guild_pattern)
@@ -35,6 +43,10 @@ def names(description, guild_pattern)
     false
   end.map(&:last)
   names
+end
+
+def officer_role_id(event)
+  event.server.roles.find { _1.name == 'Officer' }.id
 end
 
 
