@@ -10,7 +10,7 @@ end
 
 bot = Discordrb::Bot.new(
   token: ENV['TOKEN'],
-  intents: [Discordrb::INTENTS[:server_messages]]
+  intents: [Discordrb::INTENTS[:server_messages], Discordrb::INTENTS[:server_members]]
 )
 bot.message(from: 'Raider.IO') do |event|
   next unless (embed = event.message.embeds[0])
