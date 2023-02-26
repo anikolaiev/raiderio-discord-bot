@@ -18,6 +18,9 @@ bot.message(from: 'Raider.IO') do |event|
 
   thread = event.channel.start_thread("#{Time.now}", 1440, message: event.message)
   names = names(embed.description, 'Tauren Milfs')
+  whitelist = redis.get('settings:whitelist') || []
+  next if names.all? { |name| whitelist.include?(name) }
+
   strikes = names.map do |name|
     count = redis.get("player:#{name}").to_i + 1
     redis.set("player:#{name}", count)
@@ -52,6 +55,14 @@ end
 
 bot.message(from: 'Andrii', with_text: 'Ping!') do |event|
   event.respond 'Pong!'
+end
+
+bot.run
+
+command_bot = Discordrb::Commands::CommandBot.new token: ENV['TOKEN'], prefix: '!'
+
+bot.command :user do |event|
+  event.user.name
 end
 
 bot.run
