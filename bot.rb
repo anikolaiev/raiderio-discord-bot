@@ -59,14 +59,6 @@ end
 
 bot.run
 
-command_bot = Discordrb::Commands::CommandBot.new token: ENV['TOKEN'], prefix: '!'
-
-bot.command :user do |event|
-  event.user.name
-end
-
-bot.run
-
 __END__
 # my_server_id = '656930170393067531'
 # tm_server_id = '697004853494546473'
