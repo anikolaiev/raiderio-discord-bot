@@ -1,3 +1,4 @@
+.byebug_history
 node_modules
 private_key.pem
 private_key.pem-cert.pub

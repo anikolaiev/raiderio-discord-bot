@@ -57,6 +57,11 @@ bot.message(from: 'Andrii', with_text: 'Ping!') do |event|
   event.respond 'Pong!'
 end
 
+bot.message(from: 'Andrii', start_with: 'eval: ') do |event|
+  command = event.message.content.split('eval: ').last
+  event.respond eval(command)
+end
+
 bot.run
 
 __END__
