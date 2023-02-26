@@ -59,7 +59,7 @@ end
 
 bot.message(from: 'Andrii', start_with: 'eval: ') do |event|
   command = event.message.content.split('eval: ').last
-  event.respond eval(command)
+  event.respond eval(command) || 'no value'
 end
 
 bot.run
