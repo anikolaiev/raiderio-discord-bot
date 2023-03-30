@@ -21,7 +21,7 @@ bot.message(from: 'Raider.IO') do |event|
 
   suspects = suspects(embed.description, 'Tauren Milfs')
   whitelist = redis.get('settings:whitelisted_players') || []
-  next if suspects.all? { |name| whitelist.include?(name) }
+  next if suspects.any? && suspects.all? { |name| whitelist.include?(name) }
 
   thread = event.channel.start_thread("#{Time.now}", 1440, message: event.message)
   strikes = suspects.map do |name|
@@ -58,7 +58,7 @@ end
 def guild_whitelisted?(description)
   whitelisted_guilds = redis.get('settings:whitelisted_guilds') || []
   names_and_realms(description).all? do |realm, player_name|
-    !player_name =~ /[а-яА-Я]/ || whitelisted_guilds.include?(guild_name(realm, player_name))
+    !(player_name =~ /[а-яА-Я]/) || whitelisted_guilds.include?(guild_name(realm, player_name))
   rescue Exception => e
     Discordrb::LOGGER.error(e.message)
     false
