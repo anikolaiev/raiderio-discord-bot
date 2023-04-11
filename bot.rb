@@ -14,6 +14,7 @@ bot = Discordrb::Bot.new(
   token: ENV['TOKEN'],
   intents: [Discordrb::INTENTS[:server_messages], Discordrb::INTENTS[:server_members]]
 )
+
 bot.message(from: 'Raider.IO') do |event|
   next unless (embed = event.message.embeds[0])
   next unless embed.description =~ /[а-яА-Я]/
@@ -55,10 +56,14 @@ def guild_name(realm, player_name)
   JSON.parse(response.body).dig('guild', 'name')
 end
 
+def whitelisted_guilds
+  JSON.parse(redis.get('settings:whitelisted_guilds'))
+end
+
 def guild_whitelisted?(description)
-  whitelisted_guilds = redis.get('settings:whitelisted_guilds') || []
+  guilds = whitelisted_guilds
   names_and_realms(description).all? do |realm, player_name|
-    !(player_name =~ /[а-яА-Я]/) || whitelisted_guilds.include?(guild_name(realm, player_name))
+    !(player_name =~ /[а-яА-Я]/) || guilds.include?(guild_name(realm, player_name))
   rescue Exception => e
     Discordrb::LOGGER.error(e.message)
     false
@@ -77,6 +82,24 @@ end
 bot.message(from: 'Andrii', start_with: 'eval: ') do |event|
   command = event.message.content.split('eval: ').last
   event.respond eval(command) || 'no value'
+end
+
+# Commands
+
+bot.register_application_command(:'whitelist-guild', 'Whitelist a guild', server_id: '697004853494546473') do |cmd|
+  cmd.string('guild', 'Guild name')
+  cmd.boolean('remove', 'Remove guild from the list')
+end
+
+bot.application_command(:'whitelist-guild') do |event|
+  guilds = whitelisted_guilds
+  if event.options['remove']
+    guilds.delete(event.options['guild'])
+  else
+    guilds.push(event.options['guild']).uniq!
+  end
+  redis.set('settings:whitelisted_guilds', guilds)
+  event.respond(content: guilds.join(', '))
 end
 
 bot.run
