@@ -1,105 +1,34 @@
 require 'byebug'
 require 'discordrb'
-require 'net/http'
-require 'redis'
-require 'uri'
-
-PLAYER_REGEX = %r{https://raider.io/characters/eu/(?<realm>.+)/(?<name>.+)\?}
-
-def redis
-  @redis ||= Redis.new(url: ENV['REDIS_URL'])
-end
+require './commands_manager'
+require './helper'
+require './server'
 
 bot = Discordrb::Bot.new(
   token: ENV['TOKEN'],
   intents: [Discordrb::INTENTS[:server_messages], Discordrb::INTENTS[:server_members]]
 )
+CommandsManager.register(bot)
 
 bot.message(from: 'Raider.IO') do |event|
+  server = Server.new(event.server)
   next unless (embed = event.message.embeds[0])
-  next unless embed.description =~ /[а-яА-Я]/
-  next if guild_whitelisted?(embed.description)
+  next unless Helper.russian_in_group?(server, embed.description)
 
-  suspects = suspects(embed.description, 'Tauren Milfs')
-  whitelist = redis.get('settings:whitelisted_players') || []
+  suspects = Helper.suspects(embed.description, server.guid_name)
+  whitelist = server.whitelisted_players
   next if suspects.any? && suspects.all? { |name| whitelist.include?(name) }
 
-  thread = event.channel.start_thread("#{Time.now}", 1440, message: event.message)
-  strikes = suspects.map do |name|
-    count = redis.get("player:#{name}").to_i + 1
-    redis.set("player:#{name}", count)
-    count
-  end
+  thread = event.channel.start_thread(Time.now.to_s, 1440, message: event.message)
+  strikes = suspects.map { |name| server.add_strike(name) }
   suspects = suspects.zip(strikes).map do |name, count|
     "#{name} (#{count} #{count > 1 ? 'strikes' : 'strike'})"
   end
-  thread.send_message("<@&#{officer_role_id(event.server)}> Imposter detected. #{suspects.join(', ')}")
+  thread.send_message("<@&#{server.officer_role_id}> Imposter detected. #{suspects.join(', ')}")
 end
-
-def suspects(description, guild)
-  names_and_realms(description).select do |realm, player_name|
-    guild === guild_name(realm, player_name)
-  rescue Exception => e
-    Discordrb::LOGGER.error(e.message)
-    false
-  end.map(&:last)
-end
-
-def names_and_realms(description)
-  description.scan(PLAYER_REGEX)
-end
-
-def guild_name(realm, player_name)
-  parser = URI::Parser.new
-  uri = URI.parse("https://raider.io/api/v1/characters/profile?region=eu&realm=#{realm}&name=#{parser.escape(player_name)}&fields=guild")
-  response = Net::HTTP.get_response(uri)
-  JSON.parse(response.body).dig('guild', 'name')
-end
-
-def whitelisted_guilds
-  JSON.parse(redis.get('settings:whitelisted_guilds'))
-end
-
-def guild_whitelisted?(description)
-  guilds = whitelisted_guilds
-  names_and_realms(description).all? do |realm, player_name|
-    !(player_name =~ /[а-яА-Я]/) || guilds.include?(guild_name(realm, player_name))
-  rescue Exception => e
-    Discordrb::LOGGER.error(e.message)
-    false
-  end
-end
-
-def officer_role_id(server)
-  server.roles.find { _1.name == 'Officer' }.id
-end
-
 
 bot.message(from: 'Andrii', with_text: 'Ping!') do |event|
   event.respond 'Pong!'
-end
-
-bot.message(from: 'Andrii', start_with: 'eval: ') do |event|
-  command = event.message.content.split('eval: ').last
-  event.respond eval(command) || 'no value'
-end
-
-# Commands
-
-bot.register_application_command(:'whitelist-guild', 'Whitelist a guild', server_id: '697004853494546473') do |cmd|
-  cmd.string('guild', 'Guild name')
-  cmd.boolean('remove', 'Remove guild from the list')
-end
-
-bot.application_command(:'whitelist-guild') do |event|
-  guilds = whitelisted_guilds
-  if event.options['remove']
-    guilds.delete(event.options['guild'])
-  else
-    guilds.push(event.options['guild']).uniq!
-  end
-  redis.set('settings:whitelisted_guilds', guilds)
-  event.respond(content: guilds.join(', '))
 end
 
 bot.run
