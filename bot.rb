@@ -15,7 +15,7 @@ bot.message(from: 'Raider.IO') do |event|
   next unless (embed = event.message.embeds[0])
   next unless Helper.russian_in_group?(server, embed.description)
 
-  suspects = Helper.suspects(embed.description, server.guid_name)
+  suspects = Helper.suspects(embed.description, server.guild_name)
   whitelist = server.whitelisted_players
   next if suspects.any? && suspects.all? { |name| whitelist.include?(name) }
 
