@@ -19,7 +19,7 @@ bot.message(from: 'Raider.IO') do |event|
   whitelist = server.whitelisted_players
   next if suspects.any? && suspects.all? { |name| whitelist.include?(name) }
 
-  thread = event.channel.start_thread(Time.now.to_s, 1440, message: event.message)
+  thread = event.channel.start_thread(Time.now.to_s, 1440, message: event.message, type: Discordrb::Channel::TYPES[:private_thread])
   strikes = suspects.map { |name| server.add_strike(name) }
   suspects = suspects.zip(strikes).map do |name, count|
     "#{name} (#{count} #{count > 1 ? 'strikes' : 'strike'})"
