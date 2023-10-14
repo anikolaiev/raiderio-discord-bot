@@ -8,6 +8,27 @@ module Helper
   PLAYER_REGEX = %r{https://raider.io/characters/eu/(?<realm>.+)/(?<name>.+)\?}
   CYRILLIC_REGEX = /[а-яА-Я]/
 
+  def embed_hash(embed)
+    return {} unless embed
+
+    {
+      color: embed.color,
+      description: embed.description,
+      title: embed.title,
+      footer: {
+        icon_url: embed.footer&.icon_url,
+        proxy_icon_url: embed.footer&.proxy_icon_url,
+        text: embed.footer&.text
+      }.compact,
+      image: {
+        height: embed.image&.height,
+        proxy_url: embed.image&.proxy_url,
+        url: embed.image&.url,
+        width: embed.image&.width
+      }.compact
+    }.compact
+  end
+
   def guild_name(realm, player_name)
     parser = URI::Parser.new
     uri = URI.parse("https://raider.io/api/v1/characters/profile?region=eu&realm=#{realm}&name=#{parser.escape(player_name)}&fields=guild")

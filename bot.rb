@@ -19,12 +19,12 @@ bot.message(from: 'Raider.IO') do |event|
   whitelist = server.whitelisted_players
   next if suspects.any? && suspects.all? { |name| whitelist.include?(name) }
 
-  thread = event.channel.start_thread(Time.now.to_s, 1440, message: event.message, type: Discordrb::Channel::TYPES[:private_thread])
+  thread = event.channel.start_thread(Time.now.to_s, 1440, type: Discordrb::Channel::TYPES[:private_thread])
   strikes = suspects.map { |name| server.add_strike(name) }
   suspects = suspects.zip(strikes).map do |name, count|
     "#{name} (#{count} #{count > 1 ? 'strikes' : 'strike'})"
   end
-  thread.send_message("<@&#{server.officer_role_id}> Imposter detected. #{suspects.join(', ')}")
+  thread.send_embed("<@&#{server.officer_role_id}> Imposter detected. #{suspects.join(', ')}", Helper.embed_hash(embed))
 end
 
 bot.message(from: 'Andrii', with_text: 'Ping!') do |event|
